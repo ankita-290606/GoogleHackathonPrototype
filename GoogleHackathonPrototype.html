@@ -191,6 +191,14 @@
 
     footer { padding: 40px; text-align: center; color: #334155; font-size: 0.6rem; letter-spacing: 5px; }
   </style>
+  
+  <script type="importmap">
+    {
+      "imports": {
+        "@google/generative-ai": "https://esm.run/@google/generative-ai"
+      }
+    }
+  </script>
 </head>
 <body>
 
@@ -273,7 +281,7 @@
     </div>
   </div>
   <h2>SHIELD THE <span style="color:var(--accent)">UNSEEN</span></h2>
-  <p>Agentic Security Framework // Quantum-Ready</p>
+  <p>Agentic Security Framework // Powered by Gemini 1.5</p>
   <div style="display:flex; gap:20px;">
     <button class="btn-main" onclick="document.getElementById('war-room').scrollIntoView()">WAR_ROOM_ACCESS</button>
     <button class="btn-main" onclick="document.getElementById('interrogate-section').scrollIntoView()">INTERROGATE_LINK</button>
@@ -310,14 +318,14 @@
   <div id="interrogate-section" style="margin-top: 100px;">
     <div class="war-room-header">
         <h2>CORE_INTELLIGENCE_TERMINAL</h2>
-        <p style="font-size: 12px; color: #64748b; letter-spacing: 2px;">AGENTIC REASONING ENGINE</p>
+        <p style="font-size: 12px; color: #64748b; letter-spacing: 2px;">GEMINI AGENTIC REASONING</p>
     </div>
     <div class="terminal" id="dash">
         <div class="terminal-header"><span>AGENT_CORE_LOGS</span><span style="color:#475569">AUTH_LEVEL: LEVEL_4</span></div>
         <div class="term-log" id="log-body"><div id="output">> SYSTEM IDLE. AWAITING DATA_STREAM...</div></div>
         <div style="padding:15px; display:flex; gap:10px; background:#050810;">
             <input type="text" id="url" placeholder="INSERT_SUSPICIOUS_URL_OR_LINK..." style="flex:1; background:transparent; border:none; border-bottom:1px solid var(--border); color:var(--accent); outline:none; font-size:0.8rem;">
-            <button class="btn-main" style="padding:5px 20px;" onclick="runSimulation()">ANALYZE</button>
+            <button class="btn-main" style="padding:5px 20px;" onclick="runSimulation()">ANALYZE_WITH_AI</button>
         </div>
     </div>
   </div>
@@ -340,16 +348,56 @@
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@elfalem/leaflet-curve@0.9.1/dist/leaflet.curve.min.js"></script>
-<script>
-  function toggleOverlay(id, show) {
-    document.getElementById(id).style.display = show ? 'flex' : 'none';
-  }
+<script type="module">
+  import { GoogleGenerativeAI } from "@google/generative-ai";
 
-  function showMFA() { document.getElementById('login-form').style.display = 'none'; document.getElementById('mfa-step').style.display = 'block'; }
-  function finishLogin() { toggleOverlay('login-overlay', false); writeLog("Operative identity confirmed. Access Level 4 granted."); }
+  const API_KEY = "AIzaSyBKvlMtYr6yw2IwlZU3ZZmOpB2oLRW2kRI"; 
+  const genAI = new GoogleGenerativeAI(API_KEY);
+
+  window.toggleOverlay = (id, show) => { document.getElementById(id).style.display = show ? 'flex' : 'none'; };
+  window.showMFA = () => { document.getElementById('login-form').style.display = 'none'; document.getElementById('mfa-step').style.display = 'block'; };
+  window.finishLogin = () => { window.toggleOverlay('login-overlay', false); writeLog("Operative identity confirmed. Access Level 4 granted."); };
+
+  async function runSimulation() {
+    const urlInput = document.getElementById('url').value;
+    if (!urlInput) return;
+
+    const outputLog = document.getElementById('output');
+    outputLog.innerHTML = ""; 
+
+    try {
+        await writeLog("Initializing Gemini Agentic Reasoning Engine...");
+        await writeLog(`Analyzing Target Stream: ${urlInput}`, "#22d3ee");
+
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+        const prompt = `Act as a high-level Cybersecurity AI for a defense dashboard named TESSARACT. 
+        Analyze this input: "${urlInput}". 
+        Provide a 2-sentence assessment. First sentence: Identify potential threat type (Phishing, Deepfake, Botnet, or Safe). 
+        Second sentence: Suggest a tactical 'Agentic' counter-measure. 
+        Keep language technical, cold, and professional.`;
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+
+        await writeLog("REASONING_COMPLETE: Intelligence Pack Decrypted.", "#10b981");
+        await writeLog(text, "#f8fafc");
+
+        await writeLog("SYNCING_METADATA: Anomalous patterns found.", "#ef4444", "deepfake-log");
+        await writeLog("ENFORCING: Zero-Trust Gateway activated.", "#22d3ee", "phishing-log");
+        
+        addWarLog(`AI_INTEL: Analysis success for ${urlInput}`, false);
+
+    } catch (e) {
+        console.error(e);
+        await writeLog("CRITICAL_FAULT: Gemini API Handshake Failed.", "#ef4444");
+    }
+  }
+  window.runSimulation = runSimulation;
 
   async function deployGhostData() {
-    toggleOverlay('ghost-overlay', true);
+    window.toggleOverlay('ghost-overlay', true);
     const realContainer = document.getElementById('real-content');
     const ghostContainer = document.getElementById('ghost-content');
     const progressBar = document.getElementById('ghost-progress');
@@ -358,127 +406,82 @@
     ghostContainer.innerHTML = "";
     progressBar.style.width = "0%";
     statusText.innerText = "INITIALIZING...";
-    statusText.style.color = "var(--accent)";
+
     const totalLines = 25;
     for (let i = 0; i < totalLines; i++) {
         if (i === 1) statusText.innerText = "DEPLOYING GHOST DATA...";
         const rDiv = document.createElement('div');
         rDiv.style.color = 'var(--success)';
-        rDiv.style.marginBottom = '2px';
-        rDiv.innerText = `[REAL_VAULT_${i}] SECURE_VAL: ${Math.random().toString(16).substr(2, 8).toUpperCase()}... OK`;
+        rDiv.innerText = `[REAL_VAULT_${i}] SYNC: ${Math.random().toString(16).substr(2, 8).toUpperCase()}... OK`;
         realContainer.appendChild(rDiv);
+        
         const gDiv = document.createElement('div');
         gDiv.style.color = 'var(--threat)';
-        gDiv.style.marginBottom = '2px';
-        gDiv.innerText = `[DECOY_INJECT_${i}] SPOOF_VAL: 0x${Math.floor(Math.random()*16777215).toString(16)}... SUCCESS`;
+        gDiv.innerText = `[DECOY_INJECT_${i}] KINTSUGI_MEND: 0x${Math.floor(Math.random()*16777215).toString(16)}... REPAIRED`;
         ghostContainer.appendChild(gDiv);
+
         realContainer.parentElement.scrollTop = realContainer.parentElement.scrollHeight;
         ghostContainer.parentElement.scrollTop = ghostContainer.parentElement.scrollHeight;
-        const progress = ((i + 1) / totalLines) * 100;
-        progressBar.style.width = `${progress}%`;
-        await new Promise(r => setTimeout(r, 120));
+        
+        progressBar.style.width = `${((i + 1) / totalLines) * 100}%`;
+        await new Promise(r => setTimeout(r, 80));
     }
     statusText.innerText = "SYSTEM SECURE";
     statusText.style.color = "var(--success)";
-    addWarLog("DECEPTION_PROTOCOL: Ghost injection synchronized successfully.", false);
+    addWarLog("DECEPTION_PROTOCOL: Ghost injection synchronized.", false);
   }
+  window.deployGhostData = deployGhostData;
 
   const canvas = document.getElementById('bg-canvas');
-  const ghostCanvas = document.getElementById('ghost-bg-canvas');
   const ctx = canvas.getContext('2d');
-  const gCtx = ghostCanvas.getContext('2d');
-  
   let particles = [];
   function initParticles() {
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    ghostCanvas.width = window.innerWidth; ghostCanvas.height = window.innerHeight;
     particles = [];
-    // Kept around 60 particles for dense, bright connections
     for (let i = 0; i < 60; i++) {
       particles.push({ 
-        x: Math.random()*canvas.width, 
-        y: Math.random()*canvas.height, 
-        vx: (Math.random()-0.5)*0.3, 
-        vy: (Math.random()-0.5)*0.3,
-        phase: Math.random() * Math.PI * 2 
+        x: Math.random()*canvas.width, y: Math.random()*canvas.height, 
+        vx: (Math.random()-0.5)*0.3, vy: (Math.random()-0.5)*0.3, phase: Math.random()*Math.PI*2 
       });
     }
   }
-
   function drawParticles() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    gCtx.clearRect(0, 0, ghostCanvas.width, ghostCanvas.height);
-    
-    // BRIGHTER SETTINGS: Increased alpha values from 0.2/0.04 to 0.5/0.15
-    ctx.fillStyle = "rgba(34, 211, 238, 0.5)"; 
-    ctx.strokeStyle = "rgba(34, 211, 238, 0.15)";
-    gCtx.fillStyle = "rgba(34, 211, 238, 0.5)"; 
-    gCtx.strokeStyle = "rgba(34, 211, 238, 0.2)";
-
-    let time = Date.now() * 0.001;
-
+    ctx.fillStyle = "rgba(34, 211, 238, 0.4)"; ctx.strokeStyle = "rgba(34, 211, 238, 0.1)";
     particles.forEach(p => {
-      let fx = Math.sin(time + p.phase) * 0.1;
-      let fy = Math.cos(time + p.phase) * 0.1;
-      
-      p.x += p.vx + fx; 
-      p.y += p.vy + fy;
-
+      p.x += p.vx; p.y += p.vy;
       if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
       if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
-      
-      // Slightly larger dots for brightness
       ctx.beginPath(); ctx.arc(p.x, p.y, 1.2, 0, Math.PI*2); ctx.fill();
-      gCtx.beginPath(); gCtx.arc(p.x, p.y, 1.5, 0, Math.PI*2); gCtx.fill();
-
       particles.forEach(p2 => {
-        let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-        // Slightly longer connection range for a "fuller" look
-        if (dist < 200) { 
-            ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); 
-            gCtx.beginPath(); gCtx.moveTo(p.x, p.y); gCtx.lineTo(p2.x, p2.y); gCtx.stroke();
-        }
+        let d = Math.hypot(p.x - p2.x, p.y - p2.y);
+        if (d < 180) { ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); }
       });
     });
     requestAnimationFrame(drawParticles);
   }
   initParticles(); drawParticles();
+  window.addEventListener('resize', initParticles);
 
   const map = L.map('map', {zoomControl: false, attributionControl: false}).setView([20, 0], 2);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
   const hubs = { "Bengaluru": [12.97, 77.59], "NYC": [40.71, -74.00], "London": [51.50, -0.12], "Moscow": [55.75, 37.61], "Beijing": [39.90, 116.40] };
-  const hubKeys = Object.keys(hubs);
   const threatIcon = L.divIcon({ className: 'threat-marker', iconSize: [12, 12] });
-  var shield = L.circle(hubs["Bengaluru"], { color: '#22d3ee', fillColor: '#22d3ee', fillOpacity: 0.2, radius: 400000 }).addTo(map);
-
-  function addWarLog(text, isThreat = false) {
-    const stream = document.getElementById('log-stream');
-    const div = document.createElement('div');
-    div.className = `log-entry ${isThreat ? 'log-threat' : ''}`;
-    div.innerHTML = `> ${text}`;
-    stream.prepend(div);
-  }
+  let shield = L.circle(hubs["Bengaluru"], { color: '#22d3ee', fillColor: '#22d3ee', fillOpacity: 0.2, radius: 400000 }).addTo(map);
 
   function spawnAttack() {
-    const from = hubKeys[Math.floor(Math.random() * hubKeys.length)];
-    const to = hubKeys[Math.floor(Math.random() * hubKeys.length)];
+    const keys = Object.keys(hubs);
+    const from = keys[Math.floor(Math.random() * keys.length)];
+    const to = keys[Math.floor(Math.random() * keys.length)];
     if(from === to) return;
-    const start = hubs[from]; const end = hubs[to];
-    const mid = [ (start[0] + end[0]) / 2 + (Math.random() - 0.5) * 30, (start[1] + end[1]) / 2 + (Math.random() - 0.5) * 30 ];
-    const path = L.curve(['M', start, 'Q', mid, end], { color: '#22d3ee', weight: 2, fill: false, className: 'attack-path' }).addTo(map);
+    const path = L.curve(['M', hubs[from], 'Q', [20, 20], hubs[to]], { color: '#22d3ee', weight: 2, className: 'attack-path' }).addTo(map);
     setTimeout(() => {
-      L.marker(end, { icon: threatIcon }).addTo(map);
-      addWarLog(`THREAT_DETECTED: Source ${from} -> Target ${to}`, true);
-      const count = document.getElementById('count-threats');
-      count.innerText = parseInt(count.innerText) + 1;
-      if(to === "Bengaluru") {
-        shield.setStyle({fillOpacity: 0.8, color: '#ef4444'});
-        setTimeout(() => shield.setStyle({fillOpacity: 0.2, color: '#22d3ee'}), 500);
-      }
+      L.marker(hubs[to], { icon: threatIcon }).addTo(map);
+      addWarLog(`THREAT: Incoming from ${from} to ${to}`, true);
+      document.getElementById('count-threats').innerText = parseInt(document.getElementById('count-threats').innerText) + 1;
     }, 2200);
-    setTimeout(() => map.removeLayer(path), 4000);
   }
-  setInterval(spawnAttack, 3000);
+  setInterval(spawnAttack, 5000);
 
   async function writeLog(text, color = "#cbd5e1", target = "output") {
     const logEl = document.getElementById(target);
@@ -489,20 +492,13 @@
     for (let char of text) { line.innerHTML += char; await new Promise(r => setTimeout(r, 15)); }
     logEl.parentElement.scrollTop = logEl.parentElement.scrollHeight;
   }
-
-  async function runSimulation() {
-    const val = document.getElementById('url').value; if(!val) return;
-    document.getElementById('output').innerHTML = "";
-    await writeLog("Initializing Agentic Reasoning Engine...");
-    await writeLog("Scanning Deepfake signatures...", "#22d3ee", "deepfake-log");
-    await writeLog("Analyzing Phishing heuristics...", "#22d3ee", "phishing-log");
-    await new Promise(r => setTimeout(r, 800));
-    await writeLog("FLAGGED: Anomalous signature detected.", "#ef4444", "deepfake-log");
-    await writeLog("THREAT NEUTRALIZED.", "#10b981", "phishing-log");
-    addWarLog(`SIMULATION: Analysis complete for ${val}`, false);
+  function addWarLog(text, isThreat = false) {
+    const stream = document.getElementById('log-stream');
+    const div = document.createElement('div');
+    div.className = `log-entry ${isThreat ? 'log-threat' : ''}`;
+    div.innerHTML = `> ${text}`;
+    stream.prepend(div);
   }
-
-  window.addEventListener('resize', initParticles);
 </script>
 </body>
 </html>
